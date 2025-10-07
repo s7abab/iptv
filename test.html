@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live TV Streamer - Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #5a67d8;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f0f0f0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Live TV Streamer - Test Page</h1>
+    
+    <div class="test-section">
+        <h2>M3U Parser Tests</h2>
+        <button class="test-button" onclick="testM3UParser()">Test M3U Parser</button>
+        <div id="parserResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Sample M3U URLs (iptv-org)</h2>
+        <p>Try these official iptv-org URLs in the main application:</p>
+        <ul>
+            <li><strong>All Channels:</strong> <code>https://iptv-org.github.io/iptv/index.m3u</code></li>
+            <li><strong>USA Channels:</strong> <code>https://iptv-org.github.io/iptv/countries/us.m3u</code></li>
+            <li><strong>UK Channels:</strong> <code>https://iptv-org.github.io/iptv/countries/gb.m3u</code></li>
+            <li><strong>News Channels:</strong> <code>https://iptv-org.github.io/iptv/categories/news.m3u</code></li>
+            <li><strong>Sports Channels:</strong> <code>https://iptv-org.github.io/iptv/categories/sport.m3u</code></li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>Browser Compatibility</h2>
+        <div id="compatibilityResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Quick Start</h2>
+        <p>1. Open <a href="index.html" target="_blank">index.html</a> in your browser</p>
+        <p>2. The app will automatically load some default playlists</p>
+        <p>3. Click on any channel to start streaming</p>
+        <p>4. Use the search and filter options to find specific channels</p>
+        <p>5. Add your own M3U playlists using the "Add Playlist" button</p>
+    </div>
+
+    <script src="m3u-parser.js"></script>
+    <script>
+        // Test M3U Parser
+        async function testM3UParser() {
+            const resultDiv = document.getElementById('parserResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = 'Testing M3U Parser...';
+            
+            try {
+                const parser = new M3UParser();
+                
+                // Test with a simple M3U content
+                const testM3U = `#EXTM3U
+#EXTINF:-1 tvg-id="test1" tvg-name="Test Channel 1" tvg-logo="https://via.placeholder.com/100" group-title="News",Test Channel 1
+https://example.com/stream1.m3u8
+#EXTINF:-1 tvg-id="test2" tvg-name="Test Channel 2" group-title="Sports",Test Channel 2
+https://example.com/stream2.m3u8`;
+                
+                const channels = parser.parseM3UContent(testM3U, 'https://example.com/', 'Test Playlist');
+                
+                if (channels.length === 2) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ M3U Parser Test Passed!</strong><br>
+                        Parsed ${channels.length} channels:<br>
+                        • ${channels[0].name} (${channels[0].category})<br>
+                        • ${channels[1].name} (${channels[1].category})
+                    `;
+                } else {
+                    throw new Error(`Expected 2 channels, got ${channels.length}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>❌ M3U Parser Test Failed:</strong><br>${error.message}`;
+            }
+        }
+        
+        // Test browser compatibility
+        function testBrowserCompatibility() {
+            const resultDiv = document.getElementById('compatibilityResult');
+            const tests = [];
+            
+            // Test HLS support
+            if (typeof Hls !== 'undefined') {
+                tests.push('✅ HLS.js loaded successfully');
+            } else {
+                tests.push('❌ HLS.js not loaded');
+            }
+            
+            // Test video element
+            const video = document.createElement('video');
+            if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                tests.push('✅ Native HLS support detected');
+            } else {
+                tests.push('⚠️ No native HLS support (will use HLS.js)');
+            }
+            
+            // Test localStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                tests.push('✅ localStorage available');
+            } catch (e) {
+                tests.push('❌ localStorage not available');
+            }
+            
+            // Test fetch API
+            if (typeof fetch !== 'undefined') {
+                tests.push('✅ Fetch API available');
+            } else {
+                tests.push('❌ Fetch API not available');
+            }
+            
+            resultDiv.innerHTML = tests.join('<br>');
+        }
+        
+        // Run compatibility test on load
+        window.addEventListener('load', testBrowserCompatibility);
+    </script>
+</body>
+</html>

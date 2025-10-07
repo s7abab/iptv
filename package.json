@@ -1,0 +1,32 @@
+{
+  "name": "live-tv-streamer",
+  "version": "1.0.0",
+  "description": "A modern web-based live TV streaming platform that supports M3U playlists",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080 -o",
+    "test": "open test.html"
+  },
+  "keywords": [
+    "iptv",
+    "m3u",
+    "streaming",
+    "live-tv",
+    "hls",
+    "javascript",
+    "web-app"
+  ],
+  "author": "Live TV Streamer",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/live-tv-streamer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/live-tv-streamer/issues"
+  },
+  "homepage": "https://github.com/your-username/live-tv-streamer#readme"
+}
