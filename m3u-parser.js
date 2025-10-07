@@ -16,24 +16,36 @@ class M3UParser {
      */
     async parsePlaylist(url, name = 'Unknown Playlist') {
         try {
-            // Try direct fetch first
             let response;
-            try {
+            
+            // Check if it's a local file
+            if (url.startsWith('./') || url.startsWith('/') || !url.includes('://')) {
+                // Local file - use simple fetch
                 response = await fetch(url, {
                     method: 'GET',
-                    mode: 'cors',
                     headers: {
                         'Accept': 'application/vnd.apple.mpegurl, application/x-mpegurl, */*'
                     }
                 });
-            } catch (corsError) {
-                // If CORS fails, try with a CORS proxy
-                console.warn('Direct fetch failed, trying CORS proxy...');
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                response = await fetch(proxyUrl, {
-                    method: 'GET',
-                    mode: 'cors'
-                });
+            } else {
+                // Remote URL - try direct fetch first
+                try {
+                    response = await fetch(url, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Accept': 'application/vnd.apple.mpegurl, application/x-mpegurl, */*'
+                        }
+                    });
+                } catch (corsError) {
+                    // If CORS fails, try with a CORS proxy
+                    console.warn('Direct fetch failed, trying CORS proxy...');
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    response = await fetch(proxyUrl, {
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+                }
             }
 
             if (!response.ok) {
@@ -132,8 +144,13 @@ class M3UParser {
 
             // Extract channel name from the end of the line if not found in attributes
             const nameMatch = attributes.match(/,([^,]+)$/);
-            if (nameMatch && !channel.name) {
+            if (nameMatch) {
                 channel.name = nameMatch[1].trim();
+            }
+            
+            // If no group title was found, categorize based on channel name
+            if (!channel.group || channel.group === 'General') {
+                channel.category = this.categorizeChannel(channel.name);
             }
         }
 
@@ -148,23 +165,23 @@ class M3UParser {
     categorizeChannel(groupTitle) {
         const title = groupTitle.toLowerCase();
         
-        if (title.includes('news') || title.includes('cnn') || title.includes('bbc') || title.includes('fox news')) {
+        if (title.includes('news') || title.includes('cnn') || title.includes('bbc') || title.includes('fox news') || title.includes('ann-news') || title.includes('al-hadath') || title.includes('alarabiya') || title.includes('aljazeera') || title.includes('nbn') || title.includes('sharqiya-news')) {
             return 'News';
-        } else if (title.includes('sport') || title.includes('espn') || title.includes('football') || title.includes('soccer')) {
+        } else if (title.includes('sport') || title.includes('espn') || title.includes('football') || title.includes('soccer') || title.includes('beinsport') || title.includes('eurosport') || title.includes('mbcprosport') || title.includes('dubaisport') || title.includes('ad-sport') || title.includes('skysport') || title.includes('alkas')) {
             return 'Sports';
         } else if (title.includes('music') || title.includes('mtv') || title.includes('vh1')) {
             return 'Music';
-        } else if (title.includes('kids') || title.includes('cartoon') || title.includes('disney')) {
+        } else if (title.includes('kids') || title.includes('cartoon') || title.includes('disney') || title.includes('majd-kids') || title.includes('kids-movie') || title.includes('spacetoon') || title.includes('jeem') || title.includes('toyor-aljanah') || title.includes('fatafeat')) {
             return 'Kids';
-        } else if (title.includes('movie') || title.includes('cinema') || title.includes('hbo')) {
+        } else if (title.includes('movie') || title.includes('cinema') || title.includes('hbo') || title.includes('osn-movies') || title.includes('osn-cinema') || title.includes('osn-starmovie') || title.includes('lcd-aflam')) {
             return 'Entertainment';
         } else if (title.includes('documentary') || title.includes('history') || title.includes('national geographic')) {
             return 'Documentary';
         } else if (title.includes('comedy') || title.includes('funny')) {
             return 'Comedy';
-        } else if (title.includes('religious') || title.includes('church') || title.includes('god')) {
+        } else if (title.includes('religious') || title.includes('church') || title.includes('god') || title.includes('quran') || title.includes('mecca') || title.includes('iqraa') || title.includes('almajd-quran') || title.includes('saudi-quran')) {
             return 'Religious';
-        } else if (title.includes('local') || title.includes('regional')) {
+        } else if (title.includes('local') || title.includes('regional') || title.includes('dubai') || title.includes('jordan') || title.includes('oman') || title.includes('oman')) {
             return 'Local';
         } else {
             return 'Entertainment';

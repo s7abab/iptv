@@ -108,10 +108,9 @@ class LiveTVApp {
      */
     async loadDefaultPlaylists() {
         const defaultPlaylists = [
-
             {
-                name: 'Sports Channels',
-                url: 'https://iptv-org.github.io/iptv/categories/sports.m3u'
+                name: 'BeIN Sports & Arabic Channels',
+                url: 'https://iptv-org.github.io/iptv/index.m3u'
             }
         ];
 
